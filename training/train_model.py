@@ -1,14 +1,17 @@
+import os
 import logging
-import pickle
+
+import numpy as np
+import json
+from joblib import dump
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-import numpy as np
+from sklearn.metrics import accuracy_score, classification_report
 
-data_dict = pickle.load(open('./dataset/data.pickle', 'rb'))
+with open('./dataset/data.json', 'r') as f:
+    data_dict = json.load(f)
 
-# Create a new dictionary without empty data
 new_data_dict = {'data': [], 'labels': []}
 for index, data in enumerate(data_dict['data']):
     if len(data) != 0:
@@ -28,7 +31,8 @@ y_predict = model.predict(x_test)
 
 score = accuracy_score(y_predict, y_test)
 
-logging.info('{}% of samples were classified correctly !'.format(score * 100))
+logging.warning('{}% of samples were classified correctly !'.format(score * 100))
 
-with open('./model/image_classifier.p', 'wb') as f:
-    pickle.dump({'model': model}, f)
+print(classification_report(y_test, y_predict))
+
+dump(model, './model/image_classifier.joblib')

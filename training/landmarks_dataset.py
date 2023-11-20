@@ -38,9 +38,11 @@ for dir_entry in os.scandir(DATA_DIR):
                     for landmark in hand:
                         x = landmark.x
                         y = landmark.y
+                        # z = landmark.z
                         data_aux.append(x)
                         data_aux.append(y)
-
+                        # data_aux.append(z)
+                        
             data.append(data_aux)
             labels.append(dir_entry.name)
 

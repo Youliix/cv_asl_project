@@ -1,13 +1,11 @@
-import pickle
-
+import joblib
 import cv2
 import mediapipe as mp
 import numpy as np
 
 handmark_model_path = './model/hand_landmarker.task'
 
-model_dict = pickle.load(open('./model/image_classifier.p', 'rb'))
-model = model_dict['model']
+model = joblib.load('./model/image_classifier.joblib')
 
 cap = cv2.VideoCapture(0)
 
@@ -25,9 +23,9 @@ while True:
     data_aux = []
 
     ret, frame = cap.read()
+    if ret is False:
+        break
 
-    x_ = []
-    y_ = []
     H, W, _ = frame.shape
 
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -40,30 +38,32 @@ while True:
             for landmark in hand:
                 x = landmark.x
                 y = landmark.y
-
-                x_.append(x)
-                y_.append(y)
+                # z = landmark.z
                 
                 data_aux.append(x)
                 data_aux.append(y)
+                # data_aux.append(z)
 
-        x_min = int(min(x_ * W) - 10)
-        y_min = int(min(y_) * H) - 10
-        x_max = int(max(x_) * W) + 10
-        y_max = int(max(y_) * H) + 10
-        
+        x_min = int(min(data_aux[::2]) * W) - 10
+        y_min = int(min(data_aux[1::2]) * H) - 10
+        x_max = int(max(data_aux[::2]) * W) + 10
+        y_max = int(max(data_aux[1::2]) * H) + 10
+        # z_min = int(min(data_aux[2::3]) * W) - 10
+        # z_max = int(max(data_aux[2::3]) * H) + 10
+
+        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (128, 0, 255), 4)
+
         prediction = model.predict([np.asarray(data_aux)])
+        
+        # TODO : erreur ici
+        predicted_character = labels_dict[int(prediction)] 
 
-        predicted_character = labels_dict[int(prediction[0])]
-
-        cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 0, 0), 4)
-        cv2.putText(frame, predicted_character, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 0), 3,
-                    cv2.LINE_AA)
-
-    cv2.imshow('frame', frame)
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord('q'):
-        break
+        cv2.putText(frame, predicted_character, (x_min, y_min - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        
+        cv2.imshow('frame', frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            break
 
 cap.release()
 cv2.destroyAllWindows()

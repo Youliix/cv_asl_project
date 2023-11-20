@@ -1,3 +1,5 @@
-data/
+data/*
 cv_env/
-dataset/
+dataset/*
+.vscode/
+.env

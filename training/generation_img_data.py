@@ -9,11 +9,9 @@ dataset_size = 100
 
 cap = cv2.VideoCapture(0)
 
-for j in range(number_of_classes):
-    class_dir = os.path.join(DATA_DIR, str(j))
+for cl in range(number_of_classes):
+    class_dir = os.path.join(DATA_DIR, str(cl))
     os.makedirs(class_dir, exist_ok=True)
-
-    print('Collecting data for class {}'.format(j))
 
     while True:
         ret, frame = cap.read()
